@@ -1,2 +1,0 @@
-# hyprmoon
-WIP (Hyprland dots) 
