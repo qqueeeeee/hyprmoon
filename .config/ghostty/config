@@ -1,0 +1,61 @@
+# ~/.config/ghostty/config
+
+# Shell
+command = /usr/bin/zsh --login
+
+# Font
+font-family = JetBrainsMono Nerd Font
+font-size = 13
+font-thicken = true
+
+# Window
+window-decoration = false
+window-padding-x = 12
+window-padding-y = 8
+window-padding-balance = true
+
+# Background / opacity
+background-opacity = 0.92
+background-blur-radius = 20
+
+# Colors
+background = 1c1c1f
+foreground = d4d4d8
+
+# Cursor
+cursor-style = bar
+cursor-style-blink = true
+cursor-color = 71717a
+
+# Selection
+selection-background = 27272a
+selection-foreground = d4d4d8
+
+# Palette — no inline comments allowed, values must be clean
+palette = 0=#27272a
+palette = 1=#a1606e
+palette = 2=#6a8f6a
+palette = 3=#9b8f6a
+palette = 4=#5b7fa6
+palette = 5=#7f6fa6
+palette = 6=#5a8f8f
+palette = 7=#a1a1aa
+palette = 8=#3f3f46
+palette = 9=#c47a87
+palette = 10=#88b088
+palette = 11=#c0a87a
+palette = 12=#7ba3cc
+palette = 13=#a090cc
+palette = 14=#7aaaaa
+palette = 15=#d4d4d8
+
+# Scrollback
+scrollback-limit = 10000
+
+# Mouse
+mouse-hide-while-typing = true
+
+# Misc
+copy-on-select = false
+confirm-close-surface = false
+quit-after-last-window-closed = true
