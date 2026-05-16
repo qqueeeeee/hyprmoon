@@ -1,5 +1,5 @@
 -- ── LSP ENABLE ───────────────────────────────────────────────────────
-vim.lsp.enable({ 'pyright', 'ts_ls', 'lua_ls', 'clangd' })
+vim.lsp.enable({ 'basedpyright', 'ts_ls', 'lua_ls', 'clangd' })
 
 -- ── COMPLETION + KEYMAPS ON ATTACH ───────────────────────────────────
 vim.api.nvim_create_autocmd('LspAttach', {
