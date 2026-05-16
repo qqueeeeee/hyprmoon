@@ -1,13 +1,12 @@
 import Quickshell
 import Quickshell.Io
-import Quickshell.Wayland
 import QtQuick
 import QtQuick.Layouts
 
 Item {
     id: root
     height: 28
-    implicitWidth: labelText.width + 12
+    implicitWidth: labelText.width + 8
     width: implicitWidth
     Layout.preferredWidth: implicitWidth
 
@@ -16,6 +15,7 @@ Item {
     property bool popupOpen: activePopup === "bluetooth"
     property string connectedName: ""
     property string feedback: ""
+    property bool poweredOn: true
     property bool scanning: false
 
     signal togglePopup()
@@ -23,8 +23,11 @@ Item {
     Text {
         id: labelText
         anchors.centerIn: parent
-        text: root.connectedName ? "BT*" : "BT-"
-        color: root.popupOpen ? "#ffffff" : "#c8ccd4"
+        text: !root.poweredOn ? "[BT off]"
+              : root.connectedName ? "[BT*]"
+              : "[BT-]"
+        color: root.popupOpen ? "#ffffff"
+               : (root.connectedName ? "#c8ccd4" : "#4a4f5a")
         font.family: "monospace"
         font.pixelSize: 12
     }
@@ -40,10 +43,12 @@ Item {
 
     Process {
         id: infoRefreshProc
-        command: ["sh", "-c", "bluetoothctl info 2>/dev/null | awk -F': ' '/Name:/ {print $2; exit}'"]
+        command: ["sh", "-c", "p=$(bluetoothctl show 2>/dev/null | awk -F': ' '/Powered:/ {print $2; exit}'); echo \"${p:-no}\"; bluetoothctl info 2>/dev/null | awk -F': ' '/Name:/ {print $2; exit}'"]
         stdout: StdioCollector {
             onStreamFinished: {
-                root.connectedName = text.trim();
+                var lines = text.trim().split("\n");
+                root.poweredOn = (lines[0] || "").trim() === "yes";
+                root.connectedName = (lines[1] || "").trim();
                 devicesRefreshProc.running = true;
             }
         }
@@ -58,11 +63,9 @@ Item {
                 var lines = text.trim().split("\n");
                 for (var i = 0; i < lines.length; i++) {
                     var line = lines[i].trim();
-                    if (!line)
-                        continue;
+                    if (!line) continue;
                     var parts = line.split(/\s+/);
-                    if (parts.length < 3)
-                        continue;
+                    if (parts.length < 3) continue;
                     var mac = parts[1];
                     var name = parts.slice(2).join(" ");
                     deviceModel.append({ mac: mac, name: name, connected: name === root.connectedName });
@@ -80,11 +83,14 @@ Item {
     }
 
     Process {
+        id: powerProc
+        onExited: root.refreshBluetooth()
+    }
+
+    Process {
         id: scanProc
         command: ["bluetoothctl", "--timeout", "8", "scan", "on"]
-        onExited: {
-            root.refreshBluetooth();
-        }
+        onExited: root.refreshBluetooth()
     }
 
     Timer {
@@ -97,14 +103,24 @@ Item {
         }
     }
 
-    function refreshBluetooth() {
-        infoRefreshProc.running = true;
+    Timer {
+        interval: 15000
+        running: true
+        repeat: true
+        onTriggered: root.refreshBluetooth()
     }
+
+    function refreshBluetooth() { infoRefreshProc.running = true; }
 
     function connectDevice(mac) {
         root.feedback = "connecting...";
         connectProc.command = ["bluetoothctl", "connect", mac];
         connectProc.running = true;
+    }
+
+    function togglePower() {
+        powerProc.command = ["bluetoothctl", "power", root.poweredOn ? "off" : "on"];
+        powerProc.running = true;
     }
 
     function scanDevices() {
@@ -120,8 +136,8 @@ Item {
         id: popup
         screen: root.screen
         visible: root.popupOpen
-        implicitWidth: 280
-        implicitHeight: 372
+        implicitWidth: 300
+        implicitHeight: 420
         color: "#0f0f0f"
         anchors.top: true
         anchors.right: true
@@ -141,30 +157,37 @@ Item {
 
             ColumnLayout {
                 anchors.fill: parent
-                anchors.margins: 16
+                anchors.margins: 14
                 spacing: 8
 
                 RowLayout {
                     Layout.fillWidth: true
-
                     Text {
-                        text: "BLUETOOTH"
+                        text: "─ BLUETOOTH"
                         color: "#4a4f5a"
                         font.family: "monospace"
                         font.pixelSize: 10
                         font.letterSpacing: 2
                     }
-
-                    Item {
-                        Layout.fillWidth: true
-                    }
-
+                    Item { Layout.fillWidth: true }
                     Text {
-                        text: "✕"
+                        text: "[" + (root.poweredOn ? "on" : "off") + "]"
+                        color: powerArea.containsMouse ? "#ffffff" : "#c8ccd4"
+                        font.family: "monospace"
+                        font.pixelSize: 10
+                        MouseArea {
+                            id: powerArea
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            onClicked: root.togglePower()
+                        }
+                    }
+                    Item { width: 8 }
+                    Text {
+                        text: "[x]"
                         color: "#4a4f5a"
                         font.family: "monospace"
                         font.pixelSize: 10
-
                         MouseArea {
                             anchors.fill: parent
                             onClicked: root.togglePopup()
@@ -174,21 +197,17 @@ Item {
 
                 Text {
                     Layout.fillWidth: true
-                    text: root.feedback || (root.connectedName ? root.connectedName : "no device")
+                    text: root.feedback || (root.connectedName ? "> " + root.connectedName : "  no device")
                     color: root.connectedName && !root.feedback ? "#c8ccd4" : "#4a4f5a"
                     font.family: "monospace"
                     font.pixelSize: 13
                     elide: Text.ElideRight
                 }
 
-                Rectangle {
-                    Layout.fillWidth: true
-                    height: 1
-                    color: "#2a2e35"
-                }
+                Rectangle { Layout.fillWidth: true; height: 1; color: "#2a2e35" }
 
                 Text {
-                    text: "PAIRED DEVICES"
+                    text: "PAIRED"
                     color: "#4a4f5a"
                     font.family: "monospace"
                     font.pixelSize: 10
@@ -197,25 +216,20 @@ Item {
 
                 Repeater {
                     model: deviceModel
-
                     delegate: Rectangle {
                         Layout.fillWidth: true
-                        height: 36
+                        height: 30
                         color: deviceArea.containsMouse ? "#1a1a1a" : "#0f0f0f"
-
-                        Rectangle {
-                            width: 3
-                            height: parent.height
-                            color: model.connected ? "#c8ccd4" : "transparent"
-                        }
 
                         Text {
                             anchors.left: parent.left
-                            anchors.leftMargin: 12
+                            anchors.leftMargin: 8
                             anchors.verticalCenter: parent.verticalCenter
-                            width: parent.width - 20
-                            text: model.name
-                            color: "#c8ccd4"
+                            width: parent.width - 16
+                            text: (model.connected ? "> " : "  ") + model.name +
+                                  (model.connected ? "  [conn]" : "")
+                            color: model.connected ? "#c8ccd4" : "#c8ccd4"
+                            opacity: model.connected ? 1.0 : 0.75
                             font.family: "monospace"
                             font.pixelSize: 13
                             elide: Text.ElideRight
@@ -230,17 +244,19 @@ Item {
                     }
                 }
 
+                Rectangle { Layout.fillWidth: true; height: 1; color: "#2a2e35" }
+
                 Rectangle {
                     Layout.fillWidth: true
-                    height: 36
+                    height: 30
                     color: scanArea.containsMouse && !root.scanning ? "#1a1a1a" : "#0f0f0f"
-                    opacity: root.scanning ? 0.7 : 1
+                    opacity: root.scanning ? 0.6 : 1
                     border.color: "#2a2e35"
                     border.width: 1
 
                     Text {
                         anchors.centerIn: parent
-                        text: root.scanning ? "scanning..." : "SCAN"
+                        text: root.scanning ? "[ scanning... ]" : "[ scan ]"
                         color: "#c8ccd4"
                         font.family: "monospace"
                         font.pixelSize: 13
@@ -249,15 +265,13 @@ Item {
                     MouseArea {
                         id: scanArea
                         anchors.fill: parent
-                        enabled: !root.scanning
+                        enabled: !root.scanning && root.poweredOn
                         hoverEnabled: true
                         onClicked: root.scanDevices()
                     }
                 }
 
-                Item {
-                    Layout.fillHeight: true
-                }
+                Item { Layout.fillHeight: true }
             }
         }
     }

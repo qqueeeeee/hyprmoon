@@ -1,0 +1,41 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(chmod +x *)",
+      "Bash(fc-list)",
+      "Bash(busctl --user list)",
+      "Bash(hyprctl reload *)",
+      "Bash(HYPRLAND_INSTANCE_SIGNATURE=a47147bc095e5b3be3eb8bd04f0ac242b968cd4d_1778913073_870934965 hyprctl reload)",
+      "Bash(notify-send \"wired up\" \"If you can see this toast, the daemon is working.\")",
+      "Bash(notify-send -u critical \"critical test\" \"Red border, longer dismiss timer.\")",
+      "Bash(pkill -x quickshell)",
+      "Bash(HYPRLAND_INSTANCE_SIGNATURE=a47147bc095e5b3be3eb8bd04f0ac242b968cd4d_1778913073_870934965 nohup quickshell)",
+      "Bash(disown)",
+      "Read(//tmp/**)",
+      "Bash(HYPRLAND_INSTANCE_SIGNATURE=a47147bc095e5b3be3eb8bd04f0ac242b968cd4d_1778913073_870934965 notify-send \"drawer test\" \"Press SUPER+SHIFT+O to open the drawer\")",
+      "Bash(HYPRLAND_INSTANCE_SIGNATURE=a47147bc095e5b3be3eb8bd04f0ac242b968cd4d_1778913073_870934965 quickshell ipc call osd showVolume)",
+      "Read(//home/que/.config/hypr/**)",
+      "Bash(hyprctl monitors *)",
+      "Bash(bash -n /home/que/.config/quickshell/wallpaper/set-wallpaper.sh)",
+      "Read(//run/user/1000/hypr/**)",
+      "Read(//run/user/1000/hypr/a47147bc095e5b3be3eb8bd04f0ac242b968cd4d_1778913073_870934965/**)",
+      "Bash(export HYPRLAND_INSTANCE_SIGNATURE=a47147bc095e5b3be3eb8bd04f0ac242b968cd4d_1778913073_870934965)",
+      "Bash(hyprctl -j monitors)",
+      "Bash(bash -x /home/que/.config/quickshell/wallpaper/set-wallpaper.sh \"/home/que/Pictures/Wallpapers/mojave-dusk.jpg\")",
+      "Bash(hyprctl hyprpaper *)",
+      "Bash(rm -f /run/user/1000/quickshell-wallpaper.log)",
+      "Bash(/home/que/.config/quickshell/wallpaper/set-wallpaper.sh \"/home/que/Pictures/Wallpapers/mojave-dusk.jpg\")",
+      "Bash(echo \"=== exit: $? ===\")",
+      "Read(//run/user/1000/**)",
+      "Bash(echo \"exit=$?\")",
+      "Bash(hyprpaper -v)",
+      "Bash(hyprctl version *)",
+      "Bash(hyprctl --help)",
+      "Bash(echo \"no-quote exit=$?\")",
+      "Bash(echo \"quoted exit=$?\")",
+      "Bash(echo \"verb-prefixed exit=$?\")",
+      "Bash(/home/que/.config/quickshell/wallpaper/set-wallpaper.sh \"/home/que/Pictures/Wallpapers/darkroad.jpg\")",
+      "Bash(/home/que/.config/quickshell/wallpaper/set-wallpaper.sh \"/home/que/Pictures/Wallpapers/to-the-moon-\\(FHD\\).jpg\")"
+    ]
+  }
+}

@@ -4,31 +4,61 @@ import QtQuick.Layouts
 
 ColumnLayout {
     id: root
-    spacing: 8
+    spacing: 6
+    width: 248
+    Layout.preferredWidth: 248
 
     property string feedback: ""
 
     Text {
-        text: "ACTIONS"
+        text: "─ ACTIONS"
         color: "#4a4f5a"
         font.family: "monospace"
         font.pixelSize: 10
         font.letterSpacing: 2
     }
 
-    ActionRow {
-        label: "LOCK"
-        command: ["loginctl", "lock-session"]
-    }
+    GridLayout {
+        Layout.fillWidth: true
+        columns: 2
+        columnSpacing: 6
+        rowSpacing: 6
 
-    ActionRow {
-        label: "RELOAD HYPR"
-        command: ["hyprctl", "reload"]
-    }
+        ActionCell {
+            label: "LOCK"
+            shortcut: "L"
+            command: ["loginctl", "lock-session"]
+        }
 
-    ActionRow {
-        label: "SLEEP"
-        command: ["systemctl", "suspend"]
+        ActionCell {
+            label: "POWER"
+            shortcut: "P"
+            command: ["qs", "ipc", "call", "power", "toggle"]
+        }
+
+        ActionCell {
+            label: "RELOAD"
+            shortcut: "R"
+            command: ["hyprctl", "reload"]
+        }
+
+        ActionCell {
+            label: "SCREENSHOT"
+            shortcut: "S"
+            command: ["sh", "-c", "grim -g \"$(slurp)\" - | wl-copy"]
+        }
+
+        ActionCell {
+            label: "WALLPAPER"
+            shortcut: "W"
+            command: ["qs", "ipc", "call", "wallpaper", "toggle"]
+        }
+
+        ActionCell {
+            label: "LAUNCHER"
+            shortcut: "A"
+            command: ["qs", "ipc", "call", "launcher", "toggle"]
+        }
     }
 
     Text {
@@ -52,29 +82,30 @@ ColumnLayout {
     }
 
     function run(command, label) {
-        root.feedback = "applying...";
+        root.feedback = "▶ " + label.toLowerCase();
         actionProc.command = command;
         actionProc.running = true;
     }
 
-    component ActionRow: Rectangle {
+    component ActionCell: Rectangle {
         property string label: ""
+        property string shortcut: ""
         property var command: []
 
         Layout.fillWidth: true
-        height: 36
+        Layout.preferredHeight: 30
         color: actionArea.containsMouse ? "#1a1a1a" : "#0f0f0f"
         border.color: "#2a2e35"
         border.width: 1
 
         Text {
             anchors.left: parent.left
-            anchors.leftMargin: 12
+            anchors.leftMargin: 8
             anchors.verticalCenter: parent.verticalCenter
-            text: label
+            text: "[" + shortcut + "] " + label
             color: "#c8ccd4"
             font.family: "monospace"
-            font.pixelSize: 13
+            font.pixelSize: 12
         }
 
         MouseArea {

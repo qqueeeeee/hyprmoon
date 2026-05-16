@@ -5,11 +5,7 @@ import QtQuick.Layouts
 RowLayout {
     id: workspacesRoot
 
-    spacing: 8
-
-    Item {
-        width: 8
-    }
+    spacing: 2
 
     property list<bool> workspaceOccupied: []
     property int effectiveActiveWorkspaceId: Hyprland.focusedWorkspace ? Hyprland.focusedWorkspace.id : 1
@@ -28,37 +24,43 @@ RowLayout {
 
     Connections {
         target: Hyprland.workspaces
-        function onValuesChanged() {
-            updateWorkspaceOccupied();
-        }
+        function onValuesChanged() { updateWorkspaceOccupied(); }
     }
 
     Connections {
         target: Hyprland
-        function onFocusedWorkspaceChanged() {
-            updateWorkspaceOccupied();
-        }
+        function onFocusedWorkspaceChanged() { updateWorkspaceOccupied(); }
     }
 
-    onWorkspaceGroupChanged: {
-        updateWorkspaceOccupied();
-    }
+    onWorkspaceGroupChanged: updateWorkspaceOccupied()
 
     Repeater {
         model: workspacesShown
 
-        delegate: Text {
+        delegate: Item {
             property int workspaceValue: workspaceGroup * workspacesShown + index + 1
+            property bool isActive: effectiveActiveWorkspaceId === workspaceValue
+            property bool occupied: workspaceOccupied[index] === true
 
-            text: workspaceValue
-            font.family: "monospace"
-            font.pixelSize: 13
-            color: (workspaceOccupied[index] && effectiveActiveWorkspaceId === workspaceValue) ? "#ffffff" : "#4a4f5a"
-            opacity: workspaceOccupied[index] ? 1 : 0.3
+            implicitWidth: label.width + 4
+            implicitHeight: 28
+
+            Text {
+                id: label
+                anchors.centerIn: parent
+                text: isActive ? "[" + parent.workspaceValue + "]"
+                                : (parent.occupied ? "[" + parent.workspaceValue + "]"
+                                                   : " " + parent.workspaceValue + " ")
+                font.family: "monospace"
+                font.pixelSize: 13
+                color: parent.isActive ? "#ffffff"
+                                       : (parent.occupied ? "#c8ccd4" : "#4a4f5a")
+                opacity: parent.isActive ? 1.0 : (parent.occupied ? 0.85 : 0.45)
+            }
 
             MouseArea {
                 anchors.fill: parent
-                onClicked: Hyprland.dispatch("workspace " + workspaceValue)
+                onClicked: Hyprland.dispatch("workspace " + parent.workspaceValue)
             }
         }
     }

@@ -7,7 +7,9 @@ PanelWindow {
     id: root
 
     property bool drawerOpen: false
+    property bool notificationDrawerOpen: false
     property string activePopup: ""
+    property var notificationStore: null
 
     required property var screen
 
@@ -21,26 +23,82 @@ PanelWindow {
 
     color: "#0f0f0f"
 
+    component Divider: Text {
+        text: "│"
+        font.family: "monospace"
+        font.pixelSize: 13
+        color: "#2a2e35"
+    }
+
+    component BarButton: Item {
+        property string label: ""
+        property bool highlighted: false
+        signal clicked()
+
+        implicitWidth: txt.width + 10
+        implicitHeight: 28
+
+        Text {
+            id: txt
+            anchors.centerIn: parent
+            text: "[" + parent.label + "]"
+            font.family: "monospace"
+            font.pixelSize: 13
+            color: parent.highlighted || area.containsMouse ? "#ffffff" : "#c8ccd4"
+        }
+
+        MouseArea {
+            id: area
+            anchors.fill: parent
+            hoverEnabled: true
+            onClicked: parent.clicked()
+        }
+    }
+
     RowLayout {
         anchors.fill: parent
         spacing: 0
+
+        // ── Left: APP launcher + workspaces ───────────────────────────────
+        Item { width: 6 }
+
+        BarButton {
+            label: "APP"
+            onClicked: toggleLauncher()
+        }
+
+        Item { width: 6 }
+
+        Divider {}
+
+        Item { width: 6 }
 
         Workspaces {
             Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
         }
 
+        Item { width: 6 }
+
+        Divider {}
+
+        // ── Center: active window title ───────────────────────────────────
         Item {
             Layout.fillWidth: true
 
             ActiveWindow {
                 anchors.centerIn: parent
-                width: Math.min(parent.width - 24, 520)
+                width: Math.min(parent.width - 24, 560)
             }
         }
 
+        // ── Right: status indicators + clock + SYS ────────────────────────
         RowLayout {
             Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-            spacing: 0
+            spacing: 4
+
+            Divider {}
+
+            Item { width: 2 }
 
             BluetoothIndicator {
                 screen: root.screen
@@ -60,15 +118,28 @@ PanelWindow {
                 onTogglePopup: root.setActivePopup("volume")
             }
 
+            MicIndicator {
+                screen: root.screen
+            }
+
+            NotificationBell {
+                screen: root.screen
+                store: root.notificationStore
+                drawerOpen: root.notificationDrawerOpen
+                onToggleDrawer: root.toggleNotificationDrawer()
+            }
+
             BatteryIndicator {
                 screen: root.screen
                 activePopup: root.activePopup
                 onTogglePopup: root.setActivePopup("battery")
             }
 
-            Item {
-                width: 12
-            }
+            Item { width: 2 }
+
+            Divider {}
+
+            Item { width: 8 }
 
             Text {
                 id: clockText
@@ -92,26 +163,19 @@ PanelWindow {
                 onTriggered: clockText.tick = clockText.tick + 1
             }
 
-            Item {
-                width: 8
+            Item { width: 8 }
+
+            Divider {}
+
+            Item { width: 4 }
+
+            BarButton {
+                label: "SYS"
+                highlighted: root.drawerOpen
+                onClicked: toggleDrawer()
             }
 
-            Text {
-                id: toggleBtn
-                text: "SYS"
-                font.family: "monospace"
-                font.pixelSize: 13
-                color: drawerOpen ? "#ffffff" : "#c8ccd4"
-
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: toggleDrawer()
-                }
-            }
-
-            Item {
-                width: 8
-            }
+            Item { width: 6 }
         }
     }
 
@@ -124,5 +188,7 @@ PanelWindow {
     }
 
     signal toggleDrawer()
+    signal toggleNotificationDrawer()
+    signal toggleLauncher()
     signal setActivePopup(string name)
 }

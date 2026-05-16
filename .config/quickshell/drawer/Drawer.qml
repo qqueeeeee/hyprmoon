@@ -8,6 +8,7 @@ PanelWindow {
 
     property bool drawerOpen: false
     property bool drawerVisible: drawerOpen
+    property var notificationStore: null
 
     required property var screen
 
@@ -17,16 +18,16 @@ PanelWindow {
         bottom: true
     }
 
-    implicitWidth: 260
+    implicitWidth: 280
 
     visible: drawerVisible
-
     color: "#0f0f0f"
+    exclusiveZone: 0  // overlay over windows, don't reserve space
 
     Item {
         id: drawerWrapper
-        x: drawerOpen ? 0 : 260
-        width: 260
+        x: drawerOpen ? 0 : 280
+        width: 280
         height: parent.height
 
         Behavior on x {
@@ -44,66 +45,75 @@ PanelWindow {
             color: "#2a2e35"
         }
 
+        // Title row
+        Item {
+            id: titleRow
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.topMargin: 14
+            anchors.leftMargin: 16
+            anchors.rightMargin: 16
+            height: 18
+
+            Text {
+                anchors.left: parent.left
+                anchors.verticalCenter: parent.verticalCenter
+                text: "─ DASHBOARD"
+                color: "#4a4f5a"
+                font.family: "monospace"
+                font.pixelSize: 10
+                font.letterSpacing: 2
+            }
+
+            Text {
+                anchors.right: parent.right
+                anchors.verticalCenter: parent.verticalCenter
+                text: Qt.formatDateTime(new Date(), "ddd dd MMM")
+                color: "#4a4f5a"
+                font.family: "monospace"
+                font.pixelSize: 10
+                font.letterSpacing: 2
+            }
+        }
+
         Flickable {
-						height: drawerWrapper.height - 40
             anchors.fill: parent
             anchors.topMargin: 40
             anchors.leftMargin: 16
             anchors.rightMargin: 16
-            anchors.bottomMargin: 16
+            anchors.bottomMargin: 14
             clip: true
+            contentHeight: layout.implicitHeight
+            boundsBehavior: Flickable.StopAtBounds
 
             ColumnLayout {
                 id: layout
-                width: 228
-                spacing: 8
+                width: 248
+                spacing: 10
 
-                Text {
-                    text: "DASHBOARD"
-                    color: "#4a4f5a"
-                    font.family: "monospace"
-                    font.pixelSize: 10
-                    font.letterSpacing: 2
-                }
-
-                Rectangle {
-                    width: 228
-                    height: 1
-                    color: "#2a2e35"
-                }
+                Rectangle { width: 248; height: 1; color: "#2a2e35"; Layout.preferredWidth: 248 }
 
                 SystemModule {}
 
-                Rectangle {
-                    width: 228
-                    height: 1
-                    color: "#2a2e35"
-                }
+                Rectangle { width: 248; height: 1; color: "#2a2e35"; Layout.preferredWidth: 248 }
+
+                BrightnessModule {}
+
+                Rectangle { width: 248; height: 1; color: "#2a2e35"; Layout.preferredWidth: 248 }
 
                 MediaModule {}
 
-                Rectangle {
-                    width: 228
-                    height: 1
-                    color: "#2a2e35"
-                }
+                Rectangle { width: 248; height: 1; color: "#2a2e35"; Layout.preferredWidth: 248 }
 
                 CalendarModule {}
 
-                Rectangle {
-                    width: 228
-                    height: 1
-                    color: "#2a2e35"
-                }
+                Rectangle { width: 248; height: 1; color: "#2a2e35"; Layout.preferredWidth: 248 }
 
                 QuickActionsModule {}
 
-                Item {
-                    height: 16
-                }
+                Item { height: 14 }
             }
-
-            contentHeight: layout.implicitHeight
         }
     }
 
@@ -117,9 +127,6 @@ PanelWindow {
     Timer {
         id: hideTimer
         interval: 210
-        onTriggered: {
-            if (!drawerOpen)
-                drawerVisible = false;
-        }
+        onTriggered: if (!drawerOpen) drawerVisible = false
     }
 }
